@@ -1,5 +1,8 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var util = require("util");
+require("console.table");
+require('dotenv').config()
 
 // create the connection information for the sql database
 var connection = mysql.createConnection({
@@ -12,108 +15,102 @@ var connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "MySQL88!",
+  password: process.env.myPassword,
   database: "employeeTrackerDB"
 });
+
+connection.query = util.promisify(connection.query);
 
 // connect to the mysql server and sql database
 connection.connect(function(err) {
   if (err) throw err;
+  console.log("Connected as ID " + connection.threadId);
   // run the start function after the connection is made to prompt the user
   start();
 });
 
-// function which prompts the user for what action they should take
-function start() {
-  inquirer
-    .prompt({
-        name: "action",
-        type: "list",
-        message: "What would you like to do?",
-        choices: ["View All Employees", "Add Employee", "Remove Employee", "Update Employee Roles",
-         "View All Roles", "Add Role", "Remove Role", "View All Departments", "Add Department"]
-    })
-//     .then(function(answer) {
-//       switch (answer.action) {
-//         case "View All Employees":
-//             viewEmployees();
-//             break;
-//         case "Add Employee":
-//             addEmployee();
-//             break;
-//         case "Remove Employee":
-//             remvEmployee();
-//             break;
-//         case "Update Employee Roles":
-//             updtEmployeeRoles();
-//             break;
-//         case "View All Roles":
-//             viewRoles();
-//             break;
-//         case "Add Role":
-//             addRoles();
-//             break;
-//         case "Remove Role":
-//             remvRole();
-//             break;
-//         case "View All Departments":
-//             viewDepartments();
-//             break;
-//         case "Add Department":
-//             addDepartments();
-//             break;
-//       };
-//     });
-};
+    // function which prompts the user for what action they should take
+    function start() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "What would you like to do?",
+            choices: ["View All Employees", "Add Employee", "Remove Employee", "Update Employee Roles",
+            "View All Roles", "Add Role", "Remove Role", "View All Departments", "Add Department", "Remove Department"]
+        })
+        .then(function(answer) {
+        switch (answer.action) {
+            case "View All Employees":
+                viewEmployees();
+                break;
+            case "Add Employee":
+                addEmployee();
+                break;
+            case "Remove Employee":
+                remvEmployee();
+                break;
+            case "Update Employee Roles":
+                updtEmployeeRoles();
+                break;
+            case "View All Roles":
+                viewRoles();
+                break;
+            case "Add Role":
+                addRole();
+                break;
+            case "Remove Role":
+                remvRole();
+                break;
+            case "View All Departments":
+                viewDepartments();
+                break;
+            case "Add Department":
+                addDepartment();
+                break;
+            case "Remove Department":
+                remvDepartment();
+                break;
+        };
+        });
+    };
 
-// // function to handle posting new items up for auction
-// function viewEmployees() {
-//   // prompt for info about the item being put up for auction
-//   inquirer
-//     .prompt([
-//       {
-//         name: "item",
-//         type: "input",
-//         message: "What is the item you would like to submit?"
-//       },
-//       {
-//         name: "category",
-//         type: "input",
-//         message: "What category would you like to place your auction in?"
-//       },
-//       {
-//         name: "startingBid",
-//         type: "input",
-//         message: "What would you like your starting bid to be?",
-//         validate: function(value) {
-//           if (isNaN(value) === false) {
-//             return true;
-//           }
-//           return false;
-//         }
-//       }
-//     ])
-//     .then(function(answer) {
-//       // when finished prompting, insert a new item into the db with that info
-//       connection.query(
-//         "INSERT INTO auctions SET ?",
-//         {
-//           item_name: answer.item,
-//           category: answer.category,
-//           starting_bid: answer.startingBid || 0,
-//           highest_bid: answer.startingBid || 0
-//         },
-//         function(err) {
-//           if (err) throw err;
-//           console.log("Your auction was created successfully!");
-//           // re-prompt the user for if they want to bid or post
-//           start();
-//         }
-//       );
-//     });
-// }
+    async function viewEmployees() {
+        var query = "SELECT Employee.first_name AS FirstName, Employee.last_name AS LastName, Role.title AS Title, Department.name AS Department, Role.salary AS Salary, CONCAT(manager.first_name, ' ', manager.last_name) AS Manager FROM Employee LEFT JOIN Role ON Role.id = Employee.role_id LEFT JOIN Department ON Role.department_id = Department.id LEFT JOIN Employee manager ON Employee.manager_id = manager.id;"
+        var res = await connection.query(query);
+        console.table(res);
+        start();
+    };
 
-// function updEmployeeManager() {
+    async function addEmployee() {
+        var query = "SELECT id,title FROM Role;"
+        var rolesResponse = await connection.query(query);
+        var roleRes = rolesResponse.map(role => {
+            return {
+                value: role.id,
+                name: role.title
+            };
+        });
+
+        //Manager
+            // User choice in the query to post new employee to DB 
+        // before user choices 
+        // managerRes.unshift({
+        //     name: "no Manager",
+        //     value: null
+
+        var userChoices = await inquirer
+        .prompt({
+            name: "role",
+            type: "list",
+            message: "What is this employees role?",
+            choices: roleRes
+        });
+
+    };
+
+
+// function remvEmployee() {
 //   // query the database for all items being auctioned
 //   connection.query("SELECT * FROM auctions", function(err, results) {
 //     if (err) throw err;
@@ -132,12 +129,6 @@ function start() {
 //           },
 //           message: "What auction would you like to place a bid in?"
 //         },
-//         {
-//           name: "bid",
-//           type: "input",
-//           message: "How much would you like to bid?"
-//         }
-//       ])
 //       .then(function(answer) {
 //         // get the information of the chosen item
 //         var chosenItem;
@@ -146,25 +137,6 @@ function start() {
 //             chosenItem = results[i];
 //           }
 //         }
-
-//         // determine if bid was high enough
-//         if (chosenItem.highest_bid < parseInt(answer.bid)) {
-//           // bid was high enough, so update db, let the user know, and start over
-//           connection.query(
-//             "UPDATE auctions SET ? WHERE ?",
-//             [
-//               {
-//                 highest_bid: answer.bid
-//               },
-//               {
-//                 id: chosenItem.id
-//               }
-//             ],
-//             function(error) {
-//               if (error) throw err;
-//               console.log("Bid placed successfully!");
-//               start();
-//             }
 //           );
 //         }
 //         else {
