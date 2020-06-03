@@ -36,8 +36,8 @@ connection.connect(function(err) {
             name: "action",
             type: "list",
             message: "What would you like to do?",
-            choices: ["View All Employees", "Add Employee", "Remove Employee", "Update Employee Roles",
-            "View All Roles", "Add Role", "Remove Role", "View All Departments", "Add Department", "Remove Department"]
+            choices: ["View All Employees", "Add Employee", "Update Employee Roles",
+            "View All Roles", "Add Role", "View All Departments", "Add Department",]
         })
         .then(function(answer) {
         switch (answer.action) {
@@ -46,9 +46,6 @@ connection.connect(function(err) {
                 break;
             case "Add Employee":
                 addEmployee();
-                break;
-            case "Remove Employee":
-                remvEmployee();
                 break;
             case "Update Employee Roles":
                 updtEmployeeRoles();
@@ -59,17 +56,11 @@ connection.connect(function(err) {
             case "Add Role":
                 addRole();
                 break;
-            case "Remove Role":
-                remvRole();
-                break;
             case "View All Departments":
                 viewDepartments();
                 break;
             case "Add Department":
                 addDepartment();
-                break;
-            case "Remove Department":
-                remvDepartment();
                 break;
         };
         });
@@ -91,59 +82,94 @@ connection.connect(function(err) {
                 name: role.title
             };
         });
+        manager = await connection.query("SELECT * FROM employeeTrackerDB.Employee;")
+        console.table(manager);
+        var managerRes = manager.map(role => {
+            return {
+                value: role.id,
+                name: role.title
+            };
+        });
+        managerRes.unshift({
+            name: "No Manager",
+            value: null
+        });
 
-        //Manager
-            // User choice in the query to post new employee to DB 
-        // before user choices 
-        // managerRes.unshift({
-        //     name: "no Manager",
-        //     value: null
+        var empManager = await inquirer
+        .prompt({
+            name: "manager",
+            type: "list",
+            message: "Who is this employees manager?",
+            choices: managerRes
+        });
 
-        var userChoices = await inquirer
+        var empRole = await inquirer
         .prompt({
             name: "role",
             type: "list",
             message: "What is this employees role?",
             choices: roleRes
         });
-
+    
     };
+       
+    
+        
+        
 
+    
 
-// function remvEmployee() {
-//   // query the database for all items being auctioned
-//   connection.query("SELECT * FROM auctions", function(err, results) {
-//     if (err) throw err;
-//     // once you have the items, prompt the user for which they'd like to bid on
-//     inquirer
-//       .prompt([
-//         {
-//           name: "choice",
-//           type: "rawlist",
-//           choices: function() {
-//             var choiceArray = [];
-//             for (var i = 0; i < results.length; i++) {
-//               choiceArray.push(results[i].item_name);
-//             }
-//             return choiceArray;
-//           },
-//           message: "What auction would you like to place a bid in?"
-//         },
-//       .then(function(answer) {
-//         // get the information of the chosen item
-//         var chosenItem;
-//         for (var i = 0; i < results.length; i++) {
-//           if (results[i].item_name === answer.choice) {
-//             chosenItem = results[i];
-//           }
-//         }
-//           );
-//         }
-//         else {
-//           // bid wasn't high enough, so apologize and start over
-//           console.log("Your bid was too low. Try again...");
-//           start();
-//         }
-//       });
-//   });
-// }
+    // async function updtEmployeeRoles() {
+    //     var query = "SELECT id,title FROM Role;"
+    //     var rolesResponse = await connection.query(query);
+    //     var roleRes = rolesResponse.map(role => {
+    //         return {
+    //             value: role.id,
+    //             name: role.title
+    //         };
+    //     });
+    // };
+
+    // async function viewRoles() {
+    //     var query = "SELECT id,title FROM Role;"
+    //     var rolesResponse = await connection.query(query);
+    //     var roleRes = rolesResponse.map(role => {
+    //         return {
+    //             value: role.id,
+    //             name: role.title
+    //         };
+    //     });
+    // };
+
+    // async function addRole() {
+    //     var query = "SELECT id,title FROM Role;"
+    //     var rolesResponse = await connection.query(query);
+    //     var roleRes = rolesResponse.map(role => {
+    //         return {
+    //             value: role.id,
+    //             name: role.title
+    //         };
+    //     });
+    // };
+
+    // async function viewDepartments() {
+    //     var query = "SELECT id,title FROM Role;"
+    //     var rolesResponse = await connection.query(query);
+    //     var roleRes = rolesResponse.map(role => {
+    //         return {
+    //             value: role.id,
+    //             name: role.title
+    //         };
+    //     });
+    // };
+
+    // async function addDepartment() {
+    //     var query = "SELECT id,title FROM Role;"
+    //     var rolesResponse = await connection.query(query);
+    //     var roleRes = rolesResponse.map(role => {
+    //         return {
+    //             value: role.id,
+    //             name: role.title
+    //         };
+    //     });
+    // };
