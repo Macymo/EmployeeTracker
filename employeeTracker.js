@@ -84,10 +84,10 @@ connection.connect(function(err) {
         });
         manager = await connection.query("SELECT * FROM employeeTrackerDB.Employee;")
         console.table(manager);
-        var managerRes = manager.map(role => {
+        var managerRes = manager.map(manager => {
             return {
-                value: role.id,
-                name: role.title
+                value: manager.id,
+                name: manager.title
             };
         });
         managerRes.unshift({
@@ -95,7 +95,7 @@ connection.connect(function(err) {
             value: null
         });
 
-        var empManager = await inquirer
+        const empManager = await inquirer
         .prompt({
             name: "manager",
             type: "list",
@@ -103,7 +103,7 @@ connection.connect(function(err) {
             choices: managerRes
         });
 
-        var empRole = await inquirer
+        const empRole = await inquirer
         .prompt({
             name: "role",
             type: "list",
@@ -111,7 +111,35 @@ connection.connect(function(err) {
             choices: roleRes
         });
     
-    };
+        const empName = await inquirer
+        .prompt([{
+            name: "first",
+            message: "What is this employees first name?",
+            },
+            {
+            name: "last",
+            message: "What is this employees last name?"
+        }]);
+        insertEmployee();
+
+        async function insertEmployee() {
+            
+            let query = connection.query(
+              "INSERT INTO Employee SET ?",
+              {
+                first_name: empName.first,
+                Last_name: empName.last,
+                role_id: empRole.role,
+                manager_id: manager.id
+              },
+            await function(err, res) {
+                if (err) throw err;
+                console.log("Your employee was added successfully!");
+            });  
+        };
+            
+    };     
+   
        
     
         
